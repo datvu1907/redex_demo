@@ -1,6 +1,5 @@
 import 'dart:math';
-
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
 part 'grid_state.dart';
@@ -11,7 +10,6 @@ class GridCubit extends Cubit<GridState> {
             items: [GridItem(id: -1, position: 0, isAddButton: true)]));
 
   void updateHoverPosition(int? newPosition) {
-    // print('updateHoverPosition: $newPosition');
     if (state.draggingItemId == null ||
         newPosition == state.currentHoverPosition) {
       return;
@@ -54,12 +52,6 @@ class GridCubit extends Cubit<GridState> {
     ));
   }
 
-  void _updatePositions(List<GridItem> items) {
-    for (int i = 0; i < items.length; i++) {
-      items[i] = items[i].copyWith(position: i);
-    }
-  }
-
   void updateItemPosition(int oldPosition, int newPosition) {
     if (oldPosition == newPosition) return;
 
@@ -97,6 +89,60 @@ class GridCubit extends Cubit<GridState> {
     currentItems.sort((a, b) => a.position.compareTo(b.position));
 
     emit(state.copyWith(items: currentItems));
+  }
+
+  void hoverToPosition(int dragPosition) {
+    // Find item at the drag position (if any)
+    final itemAtPosition = state.items
+        .where((item) =>
+            item.position == dragPosition && item.id != state.draggingItemId)
+        .firstOrNull;
+
+    if (itemAtPosition != null) {
+      // Create a copy of current items
+      final updatedItems = List<GridItem>.from(state.items);
+
+      // Get all positions currently occupied
+      final occupiedPositions = updatedItems
+          .where((item) => item.id != state.draggingItemId)
+          .map((item) => item.position)
+          .toSet();
+
+      // Find next available position
+      int nextPosition = dragPosition + 1;
+      while (occupiedPositions.contains(nextPosition)) {
+        nextPosition++;
+      }
+
+      // Move items sequentially
+      final itemsToMove = updatedItems
+          .where((item) =>
+              item.position >= dragPosition &&
+              item.position < nextPosition &&
+              item.id != state.draggingItemId)
+          .toList();
+
+      // Sort items in reverse order to prevent position conflicts
+      itemsToMove.sort((a, b) => b.position.compareTo(a.position));
+
+      // Move each item one position forward
+      for (var item in itemsToMove) {
+        final index = updatedItems.indexOf(item);
+        updatedItems[index] = item.copyWith(position: item.position + 1);
+      }
+
+      emit(state.copyWith(
+        items: updatedItems,
+        currentHoverPosition: dragPosition,
+        draggingItemId: state.draggingItemId,
+      ));
+    } else {
+      // Just update hover position if position is empty
+      emit(state.copyWith(
+        currentHoverPosition: dragPosition,
+        draggingItemId: state.draggingItemId,
+      ));
+    }
   }
 
   void addItem() {
@@ -146,12 +192,12 @@ class GridCubit extends Cubit<GridState> {
     emit(state.copyWith(items: currentItems));
   }
 
-  // void startDragging(int itemId) {
-  //   emit(state.copyWith(
-  //     draggingItemId: itemId,
-  //     currentHoverPosition: null,
-  //   ));
-  // }
+  void startDragging(int itemId) {
+    emit(state.copyWith(
+      draggingItemId: itemId,
+      currentHoverPosition: null,
+    ));
+  }
 
   void endDragging() {
     emit(state.copyWith(

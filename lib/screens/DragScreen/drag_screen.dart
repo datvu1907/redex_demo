@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:redex_demo/blocs/grid/grid_cubit.dart';
@@ -13,6 +15,7 @@ class DragScreen extends StatefulWidget {
 class _DragScreenState extends State<DragScreen> {
   final crossAxisCount = 3;
   final spacing = 8.0;
+  Timer? _hoverTimer;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -37,10 +40,9 @@ class _DragScreenState extends State<DragScreen> {
                       (availableHeight / (itemHeight + spacing)).floor();
                   final totalGridSpots = possibleRows * crossAxisCount;
 
-                  return Container(
+                  return SizedBox(
                     height: double.infinity,
                     width: double.infinity,
-                    color: Colors.red,
                     child: Stack(
                       children: [
                         ...List.generate(totalGridSpots, (index) {
@@ -52,14 +54,14 @@ class _DragScreenState extends State<DragScreen> {
                             child: DragTarget<int>(
                               builder: (context, candidateData, rejectedData) {
                                 return Opacity(
-                                  opacity: 0.6,
+                                  opacity: 0.8,
                                   child: Container(
                                     width: itemWidth,
                                     height: itemHeight,
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(16),
                                         color: candidateData.isNotEmpty
-                                            ? AppColor.white
+                                            ? Colors.grey.shade200
                                             : Colors.transparent),
                                     child: Center(
                                       child: candidateData.isNotEmpty
@@ -74,7 +76,6 @@ class _DragScreenState extends State<DragScreen> {
                                 );
                               },
                               onWillAcceptWithDetails: (data) {
-                                print('onWillAcceptWithDetails: ${data.data}');
                                 // Update hover position when dragging over a new position
                                 context
                                     .read<GridCubit>()
@@ -82,7 +83,6 @@ class _DragScreenState extends State<DragScreen> {
                                 return true;
                               },
                               onLeave: (data) {
-                                print('onLeave: ${data}');
                                 context
                                     .read<GridCubit>()
                                     .updateHoverPosition(index);
@@ -185,12 +185,20 @@ class _DragScreenState extends State<DragScreen> {
         height: height,
       ),
       onDragUpdate: (details) {
+        _hoverTimer?.cancel();
         int? dragIndex = _calculateApproximateIndex(
             details, width, height, spacing, context);
+        if (dragIndex == item.position) {
+          return;
+        }
         if (dragIndex != null) {
-          // context.read<GridCubit>().updateHoverPosition(nextIndex);
+          // delay to prevent flickering
+          _hoverTimer = Timer(const Duration(milliseconds: 100), () {
+            context.read<GridCubit>().hoverToPosition(dragIndex);
+          });
         }
       },
+      onDragEnd: (details) => _hoverTimer?.cancel(),
       child: Container(
         width: width,
         height: height,
@@ -205,13 +213,10 @@ class _DragScreenState extends State<DragScreen> {
               )
             ]),
         child: Center(
-          // child: Icon(
-          //   Icons.drag_indicator,
-          //   color: AppColor.primary,
-          //   size: 50,
-          // ),
-          child: Text(
-            'Item ${item.id}',
+          child: Icon(
+            Icons.drag_indicator,
+            color: AppColor.primary,
+            size: 50,
           ),
         ),
       ),
@@ -240,12 +245,15 @@ class _DragScreenState extends State<DragScreen> {
     // Calculate the index based on position
     if (cellX >= 0 && cellX < crossAxisCount && cellY >= 0) {
       final approximateIndex = (cellY * crossAxisCount) + cellX;
-      print('approximateIndex $approximateIndex');
-      // context.read<GridCubit>().updateHoverPosition(approximateIndex);
-
-      print('Hovering over index: $approximateIndex (x: $cellX, y: $cellY)');
       return approximateIndex;
     }
     ;
+    return null;
+  }
+
+  @override
+  void dispose() {
+    _hoverTimer?.cancel();
+    super.dispose();
   }
 }
