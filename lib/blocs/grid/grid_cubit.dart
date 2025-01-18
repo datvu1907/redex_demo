@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:redex_demo/models/grid_item.dart';
 
 part 'grid_state.dart';
 
@@ -9,6 +10,7 @@ class GridCubit extends Cubit<GridState> {
       : super(GridState(
             items: [GridItem(id: -1, position: 0, isAddButton: true)]));
 
+  // update the drag target when user hovers over a new position
   void updateHoverPosition(int? newPosition) {
     if (state.draggingItemId == null ||
         newPosition == state.currentHoverPosition) {
@@ -52,6 +54,7 @@ class GridCubit extends Cubit<GridState> {
     ));
   }
 
+  // update the item position when user drop item
   void updateItemPosition(int oldPosition, int newPosition) {
     if (oldPosition == newPosition) return;
 
@@ -67,9 +70,8 @@ class GridCubit extends Cubit<GridState> {
     // Shift positions of other items
     for (var item in currentItems) {
       if (!item.isAddButton) {
-        // Don't adjust the add button's position
         if (oldPosition < newPosition) {
-          // Moving forward: shift items in between backwards
+          // Moving forward: shift items in between backward
           if (item.position > oldPosition && item.position <= newPosition) {
             item = item.copyWith(position: item.position - 1);
           }
@@ -91,6 +93,7 @@ class GridCubit extends Cubit<GridState> {
     emit(state.copyWith(items: currentItems));
   }
 
+  // ship items to next position if user hover over to a not empty position
   void hoverToPosition(int dragPosition) {
     // Find item at the drag position (if any)
     final itemAtPosition = state.items
@@ -145,6 +148,7 @@ class GridCubit extends Cubit<GridState> {
     }
   }
 
+  // add item to the grid
   void addItem() {
     final currentItems = List<GridItem>.from(state.items);
     final newItemId = currentItems.length > 1
