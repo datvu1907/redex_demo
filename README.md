@@ -6,6 +6,10 @@ A Flutter application demonstrating drag and drop functionality with a clean arc
 
 This application showcases a grid-based drag and drop interface using Flutter's built-in drag and drop capabilities. The app features a responsive grid layout where items can be dragged and reordered.
 
+## Demo
+
+https://github.com/user-attachments/assets/af30980f-7d42-4fb0-94dd-7e029d44110d
+
 ## Features
 
 - Grid-based layout with draggable items
@@ -26,14 +30,14 @@ The application uses:
 - **equatable**: ^2.0.7 - For value equality comparisons
 
 ### Project Structure
-
+```
 lib/
 ├── blocs/ # BLoC state management
 ├── models/ # Data models
 ├── screens/ # UI screens
 ├── themes/ # Theme configurations
 └── widgets/ # Reusable widgets
-
+```
 ### Key Dependencies
 flutter_bloc: ^9.0.0
 
