@@ -46,7 +46,7 @@ class DragItem extends StatelessWidget {
                 ),
               ),
             )
-          : Draggable<int>(
+          : Draggable<String>(
               data: item.id,
               feedback: Container(
                   alignment: Alignment.center,

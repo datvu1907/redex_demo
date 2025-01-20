@@ -87,7 +87,7 @@ class _DragScreenViewState extends State<DragScreenView> {
         key: ValueKey('grid_spot_$index'),
         left: (index % crossAxisCount) * (itemWidth + spacing),
         top: (index ~/ crossAxisCount) * (itemHeight + spacing),
-        child: DragTarget<int>(
+        child: DragTarget<String>(
           builder: (context, candidateData, rejectedData) {
             return Opacity(
               opacity: 0.8,

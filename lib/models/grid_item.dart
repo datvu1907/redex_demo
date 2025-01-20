@@ -1,5 +1,5 @@
 class GridItem {
-  final int id;
+  final String id;
   final int position;
   final bool isAddButton;
 
@@ -10,7 +10,7 @@ class GridItem {
   });
 
   GridItem copyWith({
-    int? id,
+    String? id,
     int? position,
     bool? isAddButton,
   }) {

@@ -2,7 +2,7 @@ part of 'grid_cubit.dart';
 
 class GridState extends Equatable {
   final List<GridItem> items;
-  final int? draggingItemId;
+  final String? draggingItemId;
   final int? currentHoverPosition;
 
   const GridState({
@@ -13,7 +13,7 @@ class GridState extends Equatable {
 
   GridState copyWith({
     List<GridItem>? items,
-    int? draggingItemId,
+    String? draggingItemId,
     int? currentHoverPosition,
   }) {
     return GridState(

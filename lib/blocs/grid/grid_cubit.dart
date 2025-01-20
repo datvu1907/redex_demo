@@ -2,13 +2,16 @@ import 'dart:math';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:redex_demo/models/grid_item.dart';
+import 'package:uuid/uuid.dart';
 
 part 'grid_state.dart';
 
 class GridCubit extends Cubit<GridState> {
+  final _uuid = const Uuid();
   GridCubit()
-      : super(GridState(
-            items: [GridItem(id: -1, position: 0, isAddButton: true)]));
+      : super(GridState(items: [
+          GridItem(id: 'add-button', position: 0, isAddButton: true)
+        ]));
 
   // update the drag target when user hovers over a new position
   void updateHoverPosition(int? newPosition) {
@@ -151,13 +154,7 @@ class GridCubit extends Cubit<GridState> {
   // add item to the grid
   void addItem() {
     final currentItems = List<GridItem>.from(state.items);
-    final newItemId = currentItems.length > 1
-        ? currentItems
-                .where((item) => !item.isAddButton)
-                .map((e) => e.id)
-                .reduce(max) +
-            1
-        : 1;
+    final newItemId = _uuid.v4();
 
     // Get add button
     final addButton = currentItems.removeAt(0);
@@ -196,7 +193,7 @@ class GridCubit extends Cubit<GridState> {
     emit(state.copyWith(items: currentItems));
   }
 
-  void startDragging(int itemId) {
+  void startDragging(String itemId) {
     emit(state.copyWith(
       draggingItemId: itemId,
       currentHoverPosition: null,
